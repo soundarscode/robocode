@@ -1,0 +1,49 @@
+import sys
+from rtbot_blank import *
+import logging
+import time
+import SocketServer
+import socket
+import threading
+import Queue
+import signal
+import thread
+
+HOST = 'localhost'
+PORT = 50000
+
+FORMAT = '%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s'
+DATE_FORMAT = '%H%M%S'
+
+
+def main():
+    logging.basicConfig(level=logging.INFO, format=FORMAT, datefmt=DATE_FORMAT)
+    global robot
+    robot = Rtbot(sys.argv[1])
+    robot.start()
+ #  robot.testdrive()
+
+
+    server = SocketServer.TCPServer((HOST, PORT), TCPHandler)
+
+    server.allow_reuse_address = True
+
+#    server.serve_forever()
+#    server.daemon = True
+
+    rtBotController = Robot_Controller(robot)
+
+    rtBotController.start()
+
+    t1 = threading.Thread(target=server.serve_forever)
+    t1.daemon = True
+    t1.start()
+    t1.join()
+
+#    t2 = threading.Thread(target=rtBotController)
+#    t2.start()
+
+if __name__ == '__main__':
+  main()
+
+
